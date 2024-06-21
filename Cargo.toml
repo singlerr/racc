@@ -1,0 +1,7 @@
+[package]
+name = "racc"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+decl = { path = "decl"}
