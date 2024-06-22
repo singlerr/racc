@@ -1,7 +1,7 @@
-use decl::racc;
+use decl::lex;
 
 fn main(){
-    racc!{
+    lex!{
         LETTER = [a-zA-Z]+: { return TOK_LETTER };
         IDENT = {LETTER}+: { return TOK_IDENT };
     }
@@ -9,7 +9,7 @@ fn main(){
 
 #[cfg(test)]
 mod tests {
-    use decl::racc;
+
 
     #[test]
     fn it_works() {
