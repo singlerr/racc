@@ -9,7 +9,7 @@ pub enum AutomataResponse{
 
 /// The first snapshot of DFA would be StateStorage based on HashMap
 /// TODO("Is there better state-symbol encoding?")
-struct DFA<T: StateStorage, F: AcceptanceChecker>{
+pub struct DFA<T: StateStorage, F: AcceptanceChecker>{
     /// Current state id of this machine.
     /// Initial value must be 0 because in tradition, initial state id is 0.
     state_index: usize,
@@ -45,18 +45,22 @@ impl<T: StateStorage, F: AcceptanceChecker> DFA<T, F>{
     }
 }
 
-struct BaseStorage{
+pub struct BaseStorage{
     symbol_to_from: HashMap<char, usize>,
     from_to_to: HashMap<usize, usize>
 }
 
-struct BaseAcceptanceChecker{
+pub struct BaseAcceptanceChecker{
     final_state: Vec<usize>
 }
 
 impl StateStorage for BaseStorage{
     fn lookup(&self, from: usize, symbol: char) -> Option<usize> {
-        let from = self.symbol_to_from[symbol]?;
+        let cached_from = self.symbol_to_from[symbol]?;
+        if from != cached_from{
+            return None
+        }
+
         self.from_to_to[from]
     }
 
@@ -65,10 +69,6 @@ impl StateStorage for BaseStorage{
         self.from_to_to.insert(from, to);
     }
 }
-
-fn a() -> DFA<BaseStorage, BaseAcceptanceChecker>{
-}
-
 impl <T: StateStorage, F: AcceptanceChecker> DFA<T,F>{
     pub fn transit(&mut self, symbol: char) -> Option<AutomataResponse>{
         if let Some(next_state) = self.state_table.lookup(self.state_index, symbol){
@@ -81,8 +81,6 @@ impl <T: StateStorage, F: AcceptanceChecker> DFA<T,F>{
         } else {
             Some(AutomataResponse::REJECT)
         }
-
-
     }
 
 }
@@ -91,7 +89,7 @@ impl <T: StateStorage, F: AcceptanceChecker> DFA<T,F>{
 macro_rules! new_dfa {
     ($state_size:expr, $symbol_size:expr, [$($y:expr),*]) => {
                  /// Hacky things to make macro available to assign var in statement
-                 || -> DFA<BaseStorage,BaseAcceptanceChecker>{
+                {
                     let base_acceptance_checker = BaseAcceptanceChecker{
                         final_state: vec![$($y),*]
                     };
@@ -105,6 +103,6 @@ macro_rules! new_dfa {
                         state_table: base_storage,
                         acceptance_checker: base_acceptance_checker
                     }
-                }()
+                }
     };
 }
